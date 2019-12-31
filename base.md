@@ -2,7 +2,7 @@
 
 目录
 
-- [python包中的`__init__.py`](#python包中的`__init__.py`)
+- [python包中的__init__.py](#python包中的`__init__.py`)
   - [功能](#功能)
   - [示例](#示例)
 - [蓝图构建项目](#蓝图构建项目)
