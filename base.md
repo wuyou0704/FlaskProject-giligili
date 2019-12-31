@@ -9,7 +9,7 @@
   - [什么是蓝图](#什么是蓝图)
   - [示例](#示例)
 - [Flask-SQLAlchemy](#Flask-SQLAlchemy)
-  - [SQLAlchemy中常用的配置键和值](#SQLAlchemy中常用的配置键和值]
+  - [SQLAlchemy中常用的配置键和值](#SQLAlchemy中常用的配置键和值)
   - [Column属性](#Column属性)
   - [连接数据库并创建表](#连接数据库并创建表)
   - [数据表的关系](#数据表的关系)
