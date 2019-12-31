@@ -20,7 +20,7 @@
   - [模板文件语法](#模板文件语法)
 - [flask视图相关功能](#flask视图相关功能)
 
-### python包中的`__init__.py`
+### python包中的__init__.py
 #### 功能
 
 在pycharm新建package时，默认会附带一个`__init__.py`空文件；其作用为：
