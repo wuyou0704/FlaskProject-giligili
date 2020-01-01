@@ -13,6 +13,15 @@
   - [表单验证](#表单验证)
   - [登出功能](#登出功能)
   - [访问控制](#访问控制)
+- [标签页面管理](#标签页面管理)
+  - [添加标签](添加标签)
+  - [标签列表](#标签列表)
+    - [路由](#路由)
+    - [模板](#模板)
+  - [删除标签](#删除标签)
+  - [编辑标签](#编辑标签)
+    - [路由](#路由)
+    - [模板](#模板)
 
 ### 前台界面搭建
 #### 路由
@@ -403,6 +412,214 @@ def index():
 ```
 
 因为后台有很多视图，因此要在相应的地方添加此装饰器
+
+### 标签页面管理
+#### 添加标签
+
+``` python
+# 添加标签
+@admin.route("/tag/add/", methods=['GET', 'POST'])
+@admin_login_req
+def tag_add():
+    form = TagForm()
+    if form.validate_on_submit():
+        data = form.data
+        tag = Tag.query.filter_by(name=data['name']).count()
+        if tag == 1:
+            flash("名称已经存在", "err")  # 这里定义了消息闪现的内容和类型
+            return redirect(url_for('admin.tag_add'))
+        tag = Tag(
+            name=data['name']
+        )
+        db.session.add(tag)
+        db.session.commit()
+        flash("添加标签成功！", 'ok')  # 这里定义了消息闪现的内容和类型
+        redirect(url_for('admin.tag_add'))
+    return render_template('admin/tag_add.html', form=form)
+```
+
+模板要用 category_ffilter() 来过滤闪现的消息：
+
+	{% for msg in get_flashed_messages(category_filter=['err']) %} 
+	{{ msg }}
+
+#### 标签列表
+##### 路由
+
+``` python
+# 标签列表
+@admin.route("/tag/list/<int:page>/", methods=['GET'])
+@admin_login_req
+def tag_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Tag.query.order_by(
+        Tag.addtime.desc()  # 按时间倒序
+    ).paginate(page=page, per_page=10)  # 十条显示一页
+
+    return render_template('admin/tag_list.html', page_data=page_data)
+```
+
+因为标签往往有很多，为了方便管理，使用GET请求方式，并且采用分页来展示标签；可以通过更改url参数来显示不同页的内容，因此定义了动态路由 /<int:page>/
+
+一个query对象调用paginate方法就获得了Pagination对象。paginate方法传入了两个参数，一个是当前页，另一个是每一页最多显示多少条数。paginate的返回值为代表当前页的Pagination对象。一个Paginationi对象的常用属性有：
+
+- items 当前页面中的所有记录
+- query 当前页的query对象
+- page 当前页码
+- prev_num 上一页页码
+- next_num 下一页页码
+- has_next 是否有下一页 True/False
+- has_prev 是否有上一页 True/False
+- pages 查询得到的总页数 
+- per_page 每页显示的记录条数
+- total 总的记录条数
+
+常用方法有：
+
+- prev() 上一页的分页对象Pagination
+- next() 下一页的分页对象Pagination
+- iter_pages 用来获得针对当前页的应显示的分页页码列表
+
+##### 模板
+1.路径：templates/ui/admin_page.html
+
+``` jinjia2
+{% macro page(data,url) %}
+{% if data %}
+<ul class="pagination pagination-sm no-margin pull-right">
+    <li><a href="{{ url_for(url, page=1) }}">首页</a></li>
+
+    {% if data.has_prev %}
+    <li><a href="{{ url_for(url, page=data.prev_num) }}">上一页</a></li>
+    {% else %}
+    <li class="disabled"><a href="#">上一页</a></li>
+    {% endif %}
+
+    {% for v in data.iter_pages() %}  {# 定义页码 #}
+        {% if v == data.page %}
+        <li class="active"><a href="#">{{ v }}</a></li>
+        {% else %}
+        <li><a href="{{ url_for(url, page=v) }}">{{ v }}</a></li>
+        {% endif %}
+    {% endfor %}
+
+    {% if data.has_next %}
+    <li><a href="{{ url_for(url, page=data.next_num) }}">下一页</a></li>
+    {% else %}
+    <li class="disabled"><a href="#">下一页</a></li>
+    {% endif %}
+
+    <li><a href="{{ url_for(url, page=data.pages) }}">尾页</a></li>
+</ul>
+{% endif %}
+{% endmacro %}
+```
+
+什么是宏：
+
+类似python中的函数，可以将一些复用代码抽取出来放到宏中，然后把不固定的值作为变量。   
+{% macro %}{% endmarco %} 是定义宏的标准语法；macro后面的为宏的名字，括号中的值为宏的参数
+
+该宏主要作用是通过URL和页码参数进行渲染
+
+2.路径：template/admin/tag_list.html
+
+```
+{% import 'ui/admin_page.html' as pg %}
+	<div class="box-body table-responsive no-padding">
+		<table class="table table-hover">
+			<tbody>
+            <tr>
+                <th>编号</th>
+                <th>名称</th>
+                <th>添加时间</th>
+                <th>操作事项</th>
+            </tr>
+            {% for v in page_data.items %}
+            <tr>
+                <td>{{ v.id }}</td>
+                <td>{{ v.name }}</td>
+                <td>{{ v.addtime}}</td>
+            <td>
+                <a href="" class="label label-success">编辑</a>
+                &nbsp;
+                <a class="label label-danger">删除</a>
+            </td>
+            </tr>
+            	{% endfor %}
+            </tbody>
+        </table>
+    </div>
+        <div class="box-footer clearfix">
+        {{ pg.page(page_data, 'admin.tag_list') }}
+        </div>
+    </div>
+```
+
+首先要导入定义的宏，用as起了一个别名；通过pg.page来将变量传入宏中
+
+#### 删除标签
+路由：
+
+``` python
+# 标签删除
+@admin.route("/tag/del/<int:id>/", methods=['GET'])
+@admin_login_req
+def tag_del(id=None):
+    tag = Tag.query.filter_by(id=id).first_or_404()
+    db.session.delete(tag)
+    db.session.commit()
+    flash("标签删除成功！", "ok")
+    return redirect(url_for('admin.tag_list', page=1))
+```
+
+在删除前先进行查询，使用 first_or_404() 方法，如果没查到则返回404页面，否则进行删除，并跳转到标签列表页面
+
+#### 编辑标签
+##### 路由
+``` python
+# 编辑标签
+@admin.route("/tag/edit/<int:id>", methods=['GET', 'POST'])
+@admin_login_req
+def tag_edit(id=None):
+    form = TagForm()
+    tag = Tag.query.get_or_404(id)  # 根据id获取到query对象
+    if form.validate_on_submit():  # 点击修改按钮时
+        data = form.data  
+        tag_count = Tag.query.filter_by(name=data['name']).count()
+        if tag.name == data['name'] and tag_count == 1:  # 如果名称修改了，且已存在
+            flash("名称已经存在！", "err")
+            return redirect(url_for('admin.tag_edit', id=id))  # 跳转到当前页标签编辑页
+        tag.name = data['name']
+        db.session.add(tag)
+        db.session.commit()
+        flash("修改标签成功！", 'ok')
+        redirect(url_for('admin.tag_edit', id=id))
+    return render_template('admin/tag_edit.html', form=form, tag=tag)
+```
+
+##### 模板
+和添加模板几乎一样
+
+可以预设表单的placeholder值为当前标签值：
+
+	{{ form.name(value=tag.name) }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
