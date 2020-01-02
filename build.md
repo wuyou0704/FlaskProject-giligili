@@ -22,6 +22,12 @@
   - [编辑标签](#编辑标签)
     - [路由](#路由)
     - [模板](#模板)
+- [电影页面管理](#电影页面管理)
+  - [添加电影](#添加电影)
+    - [表单](#表单)
+    - [路由](#路由)
+  - [电影列表](#电影列表)
+  - [编辑电影](#编辑电影)
 
 ### 前台界面搭建
 #### 路由
@@ -294,6 +300,7 @@ class LoginForm(FlaskForm):
             'class': "btn btn-primary btn-block btn-flat"
         }
     )
+    # 验证器
     # 当点击登录时，该方法会被自动调用，用来判断用户名是否存在，并将结果显示到前端
     def validate_account(self, field):  # validate + 字段名
             account = field.data  # 获取到用户名输入
@@ -521,7 +528,7 @@ def tag_list(page=None):
 类似python中的函数，可以将一些复用代码抽取出来放到宏中，然后把不固定的值作为变量。   
 {% macro %}{% endmarco %} 是定义宏的标准语法；macro后面的为宏的名字，括号中的值为宏的参数
 
-该宏主要作用是通过URL和页码参数进行渲染
+该宏主要作用是通过URL和页码参数进行渲染页码和页码路由
 
 2.路径：template/admin/tag_list.html
 
@@ -584,7 +591,7 @@ def tag_del(id=None):
 @admin_login_req
 def tag_edit(id=None):
     form = TagForm()
-    tag = Tag.query.get_or_404(id)  # 根据id获取到query对象
+    tag = Tag.query.get_or_404(id)  # # tag用作编辑页面显示初值
     if form.validate_on_submit():  # 点击修改按钮时
         data = form.data  
         tag_count = Tag.query.filter_by(name=data['name']).count()
@@ -596,7 +603,7 @@ def tag_edit(id=None):
         db.session.commit()
         flash("修改标签成功！", 'ok')
         redirect(url_for('admin.tag_edit', id=id))
-    return render_template('admin/tag_edit.html', form=form, tag=tag)
+    return render_template('admin/tag_edit.html', form=form, tag=tag) # # tag用作编辑页面显示初值
 ```
 
 ##### 模板
@@ -606,6 +613,104 @@ def tag_edit(id=None):
 
 	{{ form.name(value=tag.name) }}
 
+当这个方法不可行时，也可以在视图文件中定义，下面电影编辑功能会提到
+
+### 电影页面管理
+
+#### 添加电影
+##### 表单
+首先在form.py中定义表单，由于添加电影用到了文本输入框、选项选择框、文件选择框等，因此需要引入这些WTForm中定义好的输入类型：
+
+	from wtforms import StringField, PasswordField, SubmitField, FileField, TextAreaField, SelectField
+
+除了选项选择框有些特殊，其他都和StringField用法基本一样。
+
+定义的电影标签选择框：
+
+``` python
+ # 电影标签
+    tag_id = SelectField(
+        label='标签',
+        validators=[
+            DataRequired("请选择标签！")
+        ],
+        coerce=int,
+        choices=[(v.id, v.name) for v in tags],  # 列表生成器生成标签选项
+        description="标签",
+        render_kw={
+            'class': "form-control",
+        }
+    )
+```
+
+用 coerce 来定义提交的类型，因为html中所有表单数据都是字符串类型，当选项中1提交后会变成'1'，但'1'并不在choices中，因此如果不定义 coerce 会出错。定以后，当执行 validate_on_submit 进行验证时，会进行强制转型再验证
+
+之后定义 choices，来表示可选择的选项，它里面的元素是一个元祖，元祖由序号和内容组成；因为标签是从数据库中读取的，因此这里用列表生成器来生成选项，当然，要在上方获取所有标签数据：
+
+	tags = Tag.query.all()
+
+##### 路由
+因为涉及到文件的上传，因此引入了下面一些包和函数：
+
+	from werkzeug.utils import secure_filename
+	import os, uuid, datetime
+
+1.为了避免出现安全问题，使用 secure_filename 方法，使用该方法用来获取文件名时，只会返回ASCII字符，非ASCII字符会被过滤掉
+
+2.因为存在文件上传，有一些路径需要处理，因此引入了 os 模块，它有一些方法可以很好的处理文件：
+
+- os.path.exists(path)：如果路径 path 存在，返回 True；如果路径 path 不存在，返回 False 
+- os.makedirs(path[, mode])：递归创建文件夹
+- os.chmod(path, mode)：更改权限；在python2中，mode前缀为 0；python3中，mode前缀为 0o
+- os.path.abspath(path)：返回绝对路径
+- os.path.dirname(path)：返回文件路径
+- os.path.join(path1[, path2[, ...]])：把目录和文件名合成一个路径
+- os.path.splitext(path)：分割路径，返回路径名和文件扩展名的元组
+
+3.为了防止上传到服务端的文件名称重复，使用datetime和uuid来命名独一无二的文件名；这里在添加电影路由外定义了一个用来更改上传的文件名的方法
+
+模板文件和添加标签的模板类似
+
+#### 电影列表
+类似标签列表，使用paginate进行分页
+
+这里有一个多表查询方法：
+
+``` python
+page_data = Movie.query.join(Tag).filter(  # 多表关联查询
+        Tag.id == Movie.tag_id
+    ).order_by(
+        Movie.addtime.desc()
+    ).paginate(page=page, per_page=10)
+```
+
+相应的Movie模型定义的字段：
+
+	tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'))  # 所属标签
+
+因为Movie表中是不存在标签名字的，只有一个id，因此电影列表中显示的标签名是通过该外键查询得到的
+
+#### 编辑电影
+有的预设数据不能在模板中加载出来，可以在该路由增加一个判断，如果是GET请求，那么会将从数据库中查到的值传入到表单中显示出来：
+``` python
+# 编辑电影
+@admin.route("/movie/edit/<int:id>", methods=['GET', 'POST'])
+@admin_login_req
+def movie_edit(id=None):
+    form = MovieForm()
+    movie = Movie.query.get_or_404(id)  # movie用作编辑页面显示初值
+    if request.method == 'GET':
+        form.url.data = movie.url
+        form.info.data = movie.info
+        form.tag_id.data = movie.tag_id
+        form.star.data = movie.star
+
+    if form.validate_on_submit():
+        data = form.data
+        flash("修改电影成功！", 'ok')
+        redirect(url_for('admin.movie_edit', id=id))
+    return render_template('admin/movie_edit.html', form=form, movie=movie)  # movie用作编辑页面显示初值
+```
 
 
 
@@ -630,3 +735,7 @@ def tag_edit(id=None):
 
 
 
+
+```
+
+```

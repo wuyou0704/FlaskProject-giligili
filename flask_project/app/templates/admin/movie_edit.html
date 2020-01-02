@@ -6,7 +6,7 @@
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> 电影管理</a></li>
-        <li class="active">添加电影</li>
+        <li class="active">修改电影</li>
     </ol>
 </section>
 <section class="content" id="showcontent">
@@ -27,7 +27,7 @@
                         {% endfor %}
                         <div class="form-group">
                             <label for="input_title">{{ form.title.label }}</label>
-                            {{ form.title }}
+                            {{ form.title(value=movie.title) }}
                             {% for err in form.title.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -48,7 +48,7 @@
                         </div>
                         <div class="form-group">
                             <label for="input_info">{{ form.info.label }}</label>
-                            {{ form.info }}
+                            {{ form.info(value=movie.info) }}
                             {% for err in form.info.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -63,12 +63,12 @@
                                 <font style="color:red">{{ err }}</font>
                             </div>
                             {% endfor %}
-                            <!-- img src="{{ url_for('static', filename='js/holder.min.js/262x166') }}" style="margin-top:5px;" class="img-responsive"
-                                 alt="" -->
+                            <img src="{{ url_for('static', filename='uploads/'+movie.logo) }}" style="margin-top:5px;width:200px;hight:200px" class="img-responsive"
+                                 alt="">
                         </div>
                         <div class="form-group">
                             <label for="input_star">{{ form.star.label }}</label>
-                            {{ form.star }}
+                            {{ form.star(value=movie.star) }}
                             {% for err in form.star.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -77,7 +77,7 @@
                         </div>
                         <div class="form-group">
                             <label for="input_tag_id">{{ form.tag_id.label }}</label>
-                            {{ form.tag_id }}
+                            {{ form.tag_id(value=movie.tag_id) }}
                             {% for err in form.tag_id.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -86,7 +86,7 @@
                         </div>
                         <div class="form-group">
                             <label for="input_area">{{ form.area.label }}</label>
-                            {{ form.area }}
+                            {{ form.area(value=movie.area) }}
                             {% for err in form.area.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -95,7 +95,7 @@
                         </div>
                         <div class="form-group">
                             <label for="input_length">{{ form.length.label }}</label>
-                            {{ form.length }}
+                            {{ form.length(value=movie.length) }}
                             {% for err in form.length.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -104,7 +104,7 @@
                         </div>
                         <div class="form-group">
                             <label for="input_release_time">{{ form.release_time.label }}</label>
-                            {{ form.release_time }}
+                            {{ form.release_time(value=movie.release_time) }}
                             {% for err in form.release_time.errors %}
                             <div class="col-md-12">
                                 <font style="color:red">{{ err }}</font>
@@ -135,8 +135,8 @@
     jwplayer("moviecontainer").setup({
         flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
         playlist: [{
-            file: "{{ url_for('static', filename='video/htpy.mp4') }}",
-            title: "环太平洋"
+            file: "{{  url_for('static', filename='uploads/'+movie.url)  }}",
+            title: "{{ movie.title }}"
         }],
         modes: [{
             type: "html5"
