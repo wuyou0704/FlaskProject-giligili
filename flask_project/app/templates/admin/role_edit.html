@@ -1,12 +1,27 @@
 {% extends 'admin/admin.html' %}
 
+{% block css %}
+<style>
+        *{
+            font-family:"Microsoft YaHei";
+        }
+        .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
+            vertical-align:middle;
+            text-align:center;
+        }
+        #auth_list .col-md-12,#auth_list .col-md-2{
+            padding:0px;
+        }
+</style>
+{% endblock %}
+
 {% block content %}
 <!--内容-->
 <section class="content-header">
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> 权限管理</a></li>
-        <li class="active">添加权限</li>
+        <li><a href="#"><i class="fa fa-dashboard"></i> 角色管理</a></li>
+        <li class="active">编辑角色</li>
     </ol>
 </section>
 <section class="content" id="showcontent">
@@ -14,11 +29,11 @@
         <div class="col-md-12">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">添加权限</h3>
+                    <h3 class="box-title">编辑角色</h3>
                 </div>
                 <form role="form" method="post">
                     <div class="box-body">
-                        {% for msg in get_flashed_messages(category_filter=['ok']) %} {# 用于消息闪现 #}
+                         {% for msg in get_flashed_messages(category_filter=['ok']) %} {# 用于消息闪现 #}
                         <div class="alert alert-success alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                             <h4><i class="icon fa fa-check"></i> 操作成功！</h4>
@@ -28,11 +43,17 @@
                         {% endfor %}
                         <div class="form-group">
                             <label for="input_name">{{ form.name.label }}</label>
-                            {{ form.name }}
+                            {{ form.name(value=role.name) }}
                         </div>
-                        <div class="form-group">
-                            <label for="input_url">{{ form.url.label }}</label>
-                            {{ form.url }}
+                        <div class="form-group" id="auth_list">
+                            <div class="col-md-12">
+                                <label>{{ form.auths.label }}</label>
+                            </div>
+                            <div class="col-md-2">
+                                <label>
+                                    {{ form.auths(value=role.auths) }}
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="box-footer">
@@ -44,17 +65,14 @@
         </div>
     </div>
 </section>
-<!--内容-->
 {% endblock %}
 
 {% block js %}
 <script>
     $(document).ready(function(){
-        $("#g-9").addClass("active");
-        $("#g-9-1").addClass("active");
+        $("#g-10").addClass("active");
+        $("#g-10-1").addClass("active");
     });
-
-
 
 </script>
 {% endblock %}

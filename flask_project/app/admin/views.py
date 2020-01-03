@@ -1,8 +1,8 @@
 # coding='utf-8'
 from . import admin
 from flask import render_template, redirect, url_for, flash, session, request
-from app.admin.forms import LoginForm, TagForm, MovieForm, PwdForm, PreviewForm
-from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol, Oplog, Adminlog, Userlog
+from app.admin.forms import LoginForm, TagForm, MovieForm, PwdForm, PreviewForm, AuthForm, RoleForm, AdminForm
+from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol, Oplog, Adminlog, Userlog, Auth, Role
 from functools import wraps
 from app import db, app
 from werkzeug.utils import secure_filename
@@ -475,6 +475,7 @@ def adminloginlog_list(page=None):
     return render_template('admin/adminloginlog_list.html', page_data=page_data)
 
 
+# 用户登录日志
 @admin.route("/userloginlog/list/<int:page>/", methods=['GET'])
 @admin_login_req
 def userloginlog_list(page=None):
@@ -490,37 +491,157 @@ def userloginlog_list(page=None):
     return render_template('admin/userloginlog_list.html', page_data=page_data)
 
 
-@admin.route("/role/add/")
+# 添加角色
+@admin.route("/role/add/", methods=['GET', 'POST'])
 @admin_login_req
 def role_add():
-    return render_template('admin/role_add.html')
+    form = RoleForm()
+    if form.validate_on_submit():
+        data = form.data
+        role = Role(
+            name=data['name'],
+            auths=','.join([str(v) for v in data['auths']])  # data['auth']为数组形式  exm: [3]
+        )
+
+        db.session.add(role)
+        db.session.commit()
+        flash("添加角色成功！", 'ok')
+        return redirect(url_for('admin.role_add'))
+    return render_template('admin/role_add.html', form=form)
 
 
-@admin.route("/role/list/")
+# 角色列表
+@admin.route("/role/list/<int:page>/", methods=['GET'])
 @admin_login_req
-def role_list():
-    return render_template('admin/role_list.html')
+def role_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Role.query.order_by(
+        Role.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('admin/role_list.html', page_data=page_data)
 
 
-@admin.route("/auth/add/")
+# 角色删除
+@admin.route("/role/del/<int:id>/", methods=['GET'])
+@admin_login_req
+def role_del(id=None):
+    role = Role.query.filter_by(id=id).first_or_404()
+    db.session.delete(role)
+    db.session.commit()
+    flash("角色删除成功！", "ok")
+    return redirect(url_for('admin.role_list', page=1))
+
+
+# 编辑角色
+@admin.route("/role/edit/<int:id>", methods=['GET', 'POST'])
+@admin_login_req
+def role_edit(id=None):
+    form = RoleForm()
+    role = Role.query.get_or_404(id)  # tag用作编辑页面显示初值
+    if request.method == 'GET':
+        form.name.data = role.name
+        form.auths.data = [int(v) for v in role.auths.split(',')]  # 逗号分割的字符串要转换为整形列表
+    if form.validate_on_submit():
+        data = form.data
+        role.name = data['name'],
+        role.auths = ','.join([str(v) for v in data['auths']])  # data['auth']为数组形式  exm: [3]
+        db.session.add(role)
+        db.session.commit()
+        flash("修改角色成功！", 'ok')
+        redirect(url_for('admin.role_edit', id=id))
+    return render_template('admin/role_edit.html', form=form, role=role)  # role用作编辑页面显示初值
+
+
+# 权限添加
+@admin.route("/auth/add/", methods=['GET', 'POST'])
 @admin_login_req
 def auth_add():
-    return render_template('admin/auth_add.html')
+    form = AuthForm()
+    if form.validate_on_submit():
+        data = form.data
+        auth = Auth(
+            name=data['name'],
+            url=data['url']
+        )
+        db.session.add(auth)
+        db.session.commit()
+        flash('添加权限成功！', 'ok')
+        return redirect(url_for('admin.auth_add'))
+    return render_template('admin/auth_add.html', form=form)
 
 
-@admin.route("/auth/list/")
+# 权限列表
+@admin.route("auth/list/<int:page>/", methods=['GET'])
 @admin_login_req
-def auth_list():
-    return render_template('admin/auth_list.html')
+def auth_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Auth.query.order_by(
+        Auth.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('admin/auth_list.html', page_data=page_data)
 
 
-@admin.route("/admin/add/")
+# 权限删除
+@admin.route("/auth/del/<int:id>/", methods=['GET'])
+@admin_login_req
+def auth_del(id=None):
+    auth = Auth.query.filter_by(id=id).first_or_404()
+    db.session.delete(auth)
+    db.session.commit()
+    flash("权限删除成功！", "ok")
+    return redirect(url_for('admin.auth_list', page=1))
+
+
+# 编辑权限
+@admin.route("/auth/edit/<int:id>", methods=['GET', 'POST'])
+@admin_login_req
+def auth_edit(id=None):
+    form = AuthForm()
+    auth = Auth.query.get_or_404(id)  # tag用作编辑页面显示初值
+    if form.validate_on_submit():
+        data = form.data
+        auth.name = data['name']
+        auth.url = data['url']
+        db.session.add(auth)
+        db.session.commit()
+        flash("修改权限成功！", 'ok')
+        redirect(url_for('admin.auth_edit', id=id))
+    return render_template('admin/auth_edit.html', form=form, auth=auth)  # auth用作编辑页面显示初值
+
+
+# 添加管理员
+@admin.route("/admin/add/", methods=['GET', 'POST'])
 @admin_login_req
 def admin_add():
-    return render_template('admin/admin_add.html')
+    form = AdminForm()
+    if form.validate_on_submit():
+        data = form.data
+        admin = Admin(
+            name=data['name'],
+            pwd=generate_password_hash(data['pwd']),
+            role_id=data['role_id'],
+            is_super=1
+        )
+        db.session.add(admin)
+        db.session.commit()
+        flash('添加管理员成功！', 'ok')
+        return redirect(url_for('admin.admin_add'))
+    return render_template('admin/admin_add.html', form=form)
 
 
-@admin.route("/admin/list/")
+# 管理员列表
+@admin.route("/admin/list/<int:page>/", methods=['GET'])
 @admin_login_req
-def admin_list():
-    return render_template('admin/admin_list.html')
+def admin_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Admin.query.join(
+        Role
+    ).filter(
+        Role.id == Admin.role_id
+    ).order_by(
+        Admin.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('admin/admin_list.html', page_data=page_data)

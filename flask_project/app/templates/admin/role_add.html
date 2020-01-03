@@ -31,25 +31,34 @@
                 <div class="box-header with-border">
                     <h3 class="box-title">添加角色</h3>
                 </div>
-                <form role="form">
+                <form role="form" method="post">
                     <div class="box-body">
+                         {% for msg in get_flashed_messages(category_filter=['ok']) %} {# 用于消息闪现 #}
+                        <div class="alert alert-success alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h4><i class="icon fa fa-check"></i> 操作成功！</h4>
+                            {{ msg }}
+                        </div>
+
+                        {% endfor %}
                         <div class="form-group">
-                            <label for="input_name">角色名称</label>
-                            <input type="text" class="form-control" id="input_name" placeholder="请输入角色名称！">
+                            <label for="input_name">{{ form.name.label }}</label>
+                            {{ form.name }}
                         </div>
                         <div class="form-group" id="auth_list">
                             <div class="col-md-12">
-                                <label>操作权限</label>
+                                <label>{{ form.auths.label }}</label>
                             </div>
                             <div class="col-md-2">
                                 <label>
-                                    <input type="checkbox" name="input_url"> 添加标签
+                                    {{ form.auths }}
                                 </label>
                             </div>
                         </div>
                     </div>
                     <div class="box-footer">
-                        <button type="submit" class="btn btn-primary">添加</button>
+                        {{ form.submit }}
+                        {{ form.csrf_token }}
                     </div>
                 </form>
             </div>
