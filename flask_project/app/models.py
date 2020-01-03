@@ -175,6 +175,9 @@ class Oplog(db.Model):
         return "<Oplog %r>" % self.id
 
 
+# insert into user(name,pwd,email,phone,info,face,addtime,uuid)values( 'gtf1','21','13','32123','n3ull','a3','2020-01-03 17:37:12','1111a');
+# insert into comment( content,movie_id,user_id,addtime)values( '好看',3,6,now());
+
 '''
 if __name__ == '__main__':
     #db.create_all()
