@@ -6,7 +6,7 @@
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> 预告管理</a></li>
-        <li class="active">添加预告</li>
+        <li class="active">编辑预告</li>
     </ol>
 </section>
 <section class="content" id="showcontent">
@@ -14,7 +14,7 @@
         <div class="col-md-12">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">添加预告</h3>
+                    <h3 class="box-title">编辑预告</h3>
                 </div>
                 <form role="form" method="post" enctype="multipart/form-data">
                     <div class="box-body">
@@ -32,7 +32,7 @@
                         <div class="form-group">
                             <label for="input_logo">{{ form.logo.label }}</label>
                             {{ form.logo }}
-                            <img src="" style="margin-top:5px;" class="img-responsive"
+                            <img src="{{ url_for('static', filename='uploads/'+preview.logo) }}" style="margin-top:5px;width:200px;hight:200px" class="img-responsive"
                                  alt="">
                         </div>
                     </div>

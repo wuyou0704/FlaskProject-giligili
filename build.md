@@ -708,6 +708,7 @@ def movie_edit(id=None):
 
     if form.validate_on_submit():
         data = form.data
+        ......
         flash("修改电影成功！", 'ok')
         redirect(url_for('admin.movie_edit', id=id))
     return render_template('admin/movie_edit.html', form=form, movie=movie)  # movie用作编辑页面显示初值
