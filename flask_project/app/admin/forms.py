@@ -5,8 +5,6 @@ from wtforms.validators import DataRequired, ValidationError
 from app.models import Admin, Tag
 from flask import session
 
-tags = Tag.query.all()
-
 
 class LoginForm(FlaskForm):
     # 管理员登录表单
@@ -90,14 +88,13 @@ class PwdForm(FlaskForm):
         if not admin.check_pwd(pwd):
             raise ValidationError("旧密码错误！")  # 显示到前端
 
-
     def validate_new_pwd(self, field):
         pwds = field.data
         if len(pwds) < 6:
             raise ValidationError("新密码长度不低于6位！")
 
 
-
+# 标签Form
 class TagForm(FlaskForm):
     name = StringField(
         label='名称',
@@ -187,7 +184,7 @@ class MovieForm(FlaskForm):
             DataRequired("请选择标签！")
         ],
         coerce=int,
-        choices=[(v.id, v.name) for v in tags],  # 列表生成器生成标签选项
+        choices=[(v.id, v.name) for v in Tag.query.all()],  # 列表生成器生成标签选项
         description="标签",
         render_kw={
             'class': "form-control",
@@ -271,23 +268,3 @@ class PreviewForm(FlaskForm):
             'class': "btn btn-primary"
         }
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

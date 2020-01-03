@@ -2,6 +2,18 @@
 from datetime import datetime
 from app import db
 
+# from flask import Flask, render_template
+# from flask_sqlalchemy import SQLAlchemy
+# import pymysql, os
+#
+# app = Flask(__name__)
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:123456@127.0.0.1:3306/project3"
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+# app.config['SECRET_KEY'] = 'gtfly'
+# app.config['UP_DIR'] = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/uploads/')  # 设置上传文件保存路径
+# app.debug = True
+#
+# db = SQLAlchemy(app)
 
 # 会员
 class User(db.Model):
@@ -99,9 +111,9 @@ class Comment(db.Model):
 class Moviecol(db.Model):
     __tablename__ = 'moviecol'
     id = db.Column(db.Integer, primary_key=True)  # 编号
-    content = db.Column(db.Text)  # 内容
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'))  # 所属电影
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 所属用户
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
 
     def __repr__(self):
         return "<Moviecol %r>" % self.id
@@ -124,8 +136,9 @@ class Role(db.Model):
     __tablename__ = 'role'
     id = db.Column(db.Integer, primary_key=True)  # 编号
     name = db.Column(db.String(100), unique=True)  # 名称
-    auth = db.Column(db.String(600))
+    auths = db.Column(db.String(600))
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
+    admins = db.relationship('Admin', backref='role')
 
     def __repr__(self):
         return "<Role %r>" % self.name
@@ -177,25 +190,29 @@ class Oplog(db.Model):
 
 # insert into user(name,pwd,email,phone,info,face,addtime,uuid)values( 'gtf1','21','13','32123','n3ull','a3','2020-01-03 17:37:12','1111a');
 # insert into comment( content,movie_id,user_id,addtime)values( '好看',3,6,now());
+# insert into moviecol( movie_id,user_id,addtime)values( 1,1,now());
 
-'''
-if __name__ == '__main__':
-    #db.create_all()
 
-    role = Role(
-        name='超级管理员',
-        auth=""
-    )
+# if __name__ == '__main__':
 
-    from werkzeug.security import generate_password_hash
+    # db.create_all()
+    #
+    # role = Role(
+    #     name='超级管理员',
+    #     auths=''
+    # )
+    # db.session.add(role)
+    # db.session.commit()
+    #
+    # from werkzeug.security import generate_password_hash
+    #
+    # admin = Admin(
+    #     name="imoocmovie",
+    #     pwd=generate_password_hash("imoocmovie"),
+    #     is_super=0,
+    #     role_id=1
+    # )
+    #
+    # db.session.add(admin)
+    # db.session.commit()
 
-    admin = Admin(
-        name="imoocmovie",
-        pwd=generate_password_hash("imoocmovie"),
-        is_super=0,
-        role_id=1
-    )
-
-    db.session.add(admin)
-    db.session.commit()
-'''
