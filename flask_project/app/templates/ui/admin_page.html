@@ -3,6 +3,7 @@
 <ul class="pagination pagination-sm no-margin pull-right">
     <li><a href="{{ url_for(url, page=1) }}">首页</a></li>
 
+    {# 如果有上一页，则生成上一页路由 #}
     {% if data.has_prev %}
     <li><a href="{{ url_for(url, page=data.prev_num) }}">上一页</a></li>
     {% else %}
@@ -17,13 +18,18 @@
         {% endif %}
     {% endfor %}
 
+    {# 如果有下一页，则生成下一页路由 #}
     {% if data.has_next %}
     <li><a href="{{ url_for(url, page=data.next_num) }}">下一页</a></li>
     {% else %}
     <li class="disabled"><a href="#">下一页</a></li>
     {% endif %}
 
+    {% if data.pages== 0 %}
+    <li><a href="{{ url_for(url, page=1) }}">尾页</a></li>
+    {% else %}
     <li><a href="{{ url_for(url, page=data.pages) }}">尾页</a></li>
+    {% endif %}
 </ul>
 {% endif %}
 {% endmacro %}
