@@ -154,7 +154,7 @@ class Admin(db.Model):
 class Adminlog(db.Model):
     __table__name = 'adminlog'
     id = db.Column(db.Integer, primary_key=True)  # 编号
-    user_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属会员
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属会员
     ip = db.Column(db.String(100))  # 登录ip
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
 
@@ -166,7 +166,7 @@ class Adminlog(db.Model):
 class Oplog(db.Model):
     __table__name = 'oplog'
     id = db.Column(db.Integer, primary_key=True)  # 编号
-    user_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
     ip = db.Column(db.String(100))  # 登录ip
     reason = db.Column(db.String(600))  # 操作原因
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
