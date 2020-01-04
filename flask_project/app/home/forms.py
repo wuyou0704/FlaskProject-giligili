@@ -129,6 +129,12 @@ class LoginForm(FlaskForm):
         }
     )
 
+    def validate_name(self, field):  # validate + 字段名
+        name = field.data  # 获取到用户名输入
+        name = User.query.filter_by(name=name).count()  # 数据库查询
+        if name == 0:
+            raise ValidationError("账号不存在")  # 显示到前端
+
 
 class UserdetailForm(FlaskForm):
     name = StringField(
