@@ -1,11 +1,12 @@
 # coding='utf-8'
 from . import home
 from flask import render_template, redirect, url_for, flash, session, request
-from app.home.forms import RegisterForm, LoginForm
+from app.home.forms import RegisterForm, LoginForm, UserdetailForm
 from app.models import User, Userlog
 from werkzeug.security import generate_password_hash
-from app import db
-import uuid, time
+from werkzeug.utils import secure_filename
+from app import db, app
+import uuid, time, os, datetime
 from functools import wraps
 
 
@@ -77,11 +78,44 @@ def register():
     return render_template('home/register.html', form=form)
 
 
+# 修改文件名称为统一格式
+def change_filename(filename):
+    fileinfo = os.path.splitext(filename)
+    filename = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + str(uuid.uuid4().hex) + fileinfo[-1]
+    return filename
+
+
 # 会员中心
-@home.route('/user/')
+@home.route('/user/', methods=['GET', 'POST'])
 @user_login_req
 def user():
-    return render_template('home/user.html')
+    form = UserdetailForm()
+    user = User.query.get(int(session['user_id']))
+    form.face.validators = []
+    if request.method == 'GET':
+        form.name.data = user.name
+        form.email.data = user.email
+        form.phone.data = user.phone
+        form.info.data = user.info
+    if form.validate_on_submit():
+        data = form.data
+        file_face = secure_filename(form.face.data.filename)  # 获取上传的电影封面名称
+        # 创建上传目录
+        if not os.path.exists(app.config['FC_DIR']):
+            os.makedirs(app.config['FC_DIR'])
+            os.chmod(app.config['FC_DIR'], 0o666)
+        # 修改文件名称为统一格式
+        user.face = change_filename(file_face)
+        form.face.data.save(app.config['FC_DIR'] + user.face)
+        user.name = data['name']
+        user.email = data['email']
+        user.phone = data['phone']
+        user.info = data['info']
+        db.session.add(user)
+        db.session.commit()
+        flash("修改成功！", 'ok')
+        return redirect(url_for('home.user'))
+    return render_template('home/user.html', form=form, user=user)
 
 
 # 修改密码

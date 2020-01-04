@@ -130,11 +130,73 @@ class LoginForm(FlaskForm):
     )
 
 
+class UserdetailForm(FlaskForm):
+    name = StringField(
+        label='用户名',
+        validators=[
+            DataRequired("请输入用户名！")
+        ],
+        description='用户名',
+        render_kw={
+            'class': "form-control",
+            'placeholder': "请输入用户名称！"
+        }
+    )
 
+    email = StringField(
+        label='邮箱',
+        validators=[
+            DataRequired("请输入邮箱！"),
+            Email("邮箱格式不正确！")
+        ],
+        description='邮箱',
+        render_kw={
+            'class': "form-control",
+            'placeholder': "请输入用户邮箱！"
+        }
+    )
 
+    phone = StringField(
+        label='手机',
+        validators=[
+            DataRequired("请输入手机号码！"),
+            Regexp("1[3458]\\d[9]", message="手机格式不正确！")
+        ],
+        description='手机号码',
+        render_kw={
+            'class': "form-control",
+            'placeholder': "请输入手机号码！"
+        }
+    )
 
+    # 个人头像
+    face = FileField(
+        label='头像',
+        validators=[
+            DataRequired("请上传头像！")
+        ],
+        description="头像"
+    )
 
+    # 个人简介
+    info = TextAreaField(
+        label='简介',
+        validators=[
+            DataRequired("请输入简介！")
+        ],
+        description='简介',
+        render_kw={
+            'placeholder': '十年窗下无人问，一举成名天下知',
+            'class': "form-control",
+            'rows': "10",
+        }
+    )
 
-
+    submit = SubmitField(
+        '保存修改',
+        render_kw={
+            'class': "btn btn-success"
+        }
+    )
 
 
