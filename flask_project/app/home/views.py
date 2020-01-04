@@ -227,9 +227,20 @@ def animation():
 
 
 # 搜索
-@home.route('/search/')
-def search():
-    return render_template('home/search.html')
+@home.route('/search/<int:page>/', methods=['GET'])
+def search(page=None):
+    if page is None:
+        page = 1
+    key = request.args.get('key', '')
+    count = Movie.query.filter(
+        Movie.title.ilike('%'+key+'%')
+    ).count()
+    page_data = Movie.query.filter(
+        Movie.title.ilike('%'+key+'%')
+    ).order_by(
+        Movie.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('home/search.html', key=key, page_data=page_data, count=count)
 
 
 # 视频播放
