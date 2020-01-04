@@ -200,3 +200,47 @@ class UserdetailForm(FlaskForm):
     )
 
 
+# 修改密码表单
+class PwdForm(FlaskForm):
+    old_pwd = PasswordField(
+        label='旧密码',
+        validators=[
+            DataRequired("请输入旧密码！")
+        ],
+        description="旧密码",
+        render_kw={
+            'class': "form-control",
+            'placeholder': "请输入密码！",
+        }
+    )
+
+    new_pwd = PasswordField(
+        label='新密码',
+        validators=[
+            DataRequired("请输入新密码！")
+        ],
+        description="新密码",
+        render_kw={
+            'class': "form-control",
+            'placeholder': "请输入新密码！",
+        }
+    )
+
+    submit = SubmitField(
+        '修改密码',
+        render_kw={
+            'class': "btn btn-primary btn-block btn-flat"
+        }
+    )
+
+    def validate_old_pwd(self, field):  # validate + 字段名
+        pwd = field.data  # 获取到用户名输入
+        name = session['user']
+        user = User.query.filter_by(name=name).first()  # 数据库查询
+        if not user.check_pwd(pwd):
+            raise ValidationError("旧密码错误！")  # 显示到前端
+
+    def validate_new_pwd(self, field):
+        pwds = field.data
+        if len(pwds) < 6:
+            raise ValidationError("新密码长度不低于6位！")

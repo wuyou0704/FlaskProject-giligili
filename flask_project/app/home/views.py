@@ -1,7 +1,7 @@
 # coding='utf-8'
 from . import home
 from flask import render_template, redirect, url_for, flash, session, request
-from app.home.forms import RegisterForm, LoginForm, UserdetailForm
+from app.home.forms import RegisterForm, LoginForm, UserdetailForm, PwdForm
 from app.models import User, Userlog
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
@@ -119,10 +119,19 @@ def user():
 
 
 # 修改密码
-@home.route('/pwd/')
+@home.route('/pwd/', methods=['GET', 'POST'])
 @user_login_req
 def pwd():
-    return render_template('home/pwd.html')
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        user = User.query.filter_by(name=session['user']).first()
+        user.pwd = generate_password_hash(data['new_pwd'])
+        db.session.add(user)
+        db.session.commit()
+        flash("修改成功！", 'ok')
+        return redirect(url_for('home.logout'))
+    return render_template('home/pwd.html', form=form)
 
 
 # 评论
@@ -133,10 +142,17 @@ def comments():
 
 
 # 登录日志
-@home.route('/loginlog/')
+@home.route('/loginlog/<int:page>/', methods=['GET'])
 @user_login_req
-def loginlog():
-    return render_template('home/loginlog.html')
+def loginlog(page=None):
+    if page is None:
+        page = 1
+    page_data = Userlog.query.filter_by(
+        user_id=int(session['user_id'])
+    ).order_by(
+        Userlog.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('home/loginlog.html', page_data=page_data)
 
 
 # 收藏

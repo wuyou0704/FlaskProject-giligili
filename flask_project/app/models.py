@@ -2,6 +2,7 @@
 from datetime import datetime
 from app import db
 
+
 # from flask import Flask, render_template
 # from flask_sqlalchemy import SQLAlchemy
 # import pymysql, os
@@ -37,6 +38,7 @@ class User(db.Model):
     def check_pwd(self, pwd):
         from werkzeug.security import check_password_hash
         return check_password_hash(self.pwd, pwd)
+
 
 # 会员登录日志
 class Userlog(db.Model):
@@ -166,6 +168,7 @@ class Admin(db.Model):
         from werkzeug.security import check_password_hash  # 验证hash密码
         return check_password_hash(self.pwd, pwd)  # 第一个参数为模型中的pwd，第二个为传入的pwd
 
+
 # 管理员登录日志
 class Adminlog(db.Model):
     __table__name = 'adminlog'
@@ -190,7 +193,6 @@ class Oplog(db.Model):
     def __repr__(self):
         return "<Oplog %r>" % self.id
 
-
 # insert into user(name,pwd,email,phone,info,face,addtime,uuid)values( 'gtf1','21','13','32123','n3ull','a3','2020-01-03 17:37:12','1111a');
 # insert into comment( content,movie_id,user_id,addtime)values( '好看',3,6,now());
 # insert into moviecol( movie_id,user_id,addtime)values( 1,1,now());
@@ -198,24 +200,23 @@ class Oplog(db.Model):
 
 # if __name__ == '__main__':
 
-    # db.create_all()
-    #
-    # role = Role(
-    #     name='超级管理员',
-    #     auths=''
-    # )
-    # db.session.add(role)
-    # db.session.commit()
-    #
-    # from werkzeug.security import generate_password_hash
-    #
-    # admin = Admin(
-    #     name="imoocmovie",
-    #     pwd=generate_password_hash("imoocmovie"),
-    #     is_super=0,
-    #     role_id=1
-    # )
-    #
-    # db.session.add(admin)
-    # db.session.commit()
-
+# db.create_all()
+#
+# role = Role(
+#     name='超级管理员',
+#     auths=''
+# )
+# db.session.add(role)
+# db.session.commit()
+#
+# from werkzeug.security import generate_password_hash
+#
+# admin = Admin(
+#     name="imoocmovie",
+#     pwd=generate_password_hash("imoocmovie"),
+#     is_super=0,
+#     role_id=1
+# )
+#
+# db.session.add(admin)
+# db.session.commit()
