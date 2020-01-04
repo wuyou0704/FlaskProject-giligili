@@ -130,7 +130,7 @@
                     </div>
                     {% endif %}
                     <ol class="breadcrumb" style="margin-top:6px;">
-                        <li>全部评论(5)</li>
+                        <li>全部评论({{ movie.commentnum }})</li>
                     </ol>
                     <form role="form" style="margin-bottom:6px;" method="post">
                         <div class="form-group">
@@ -150,6 +150,9 @@
                         &nbsp;
                         <a class="btn btn-danger" id="btn-col"><span class="glyphicon glyphicon-heart"></span>&nbsp;收藏电影</a>
                     </form>
+                     <div class="col-md-12">
+                            <font style="color:green" id="show_col_msg"></font>
+                     </div>
                     <ul class="commentList">
                         {% for v in page_data.items %}
                         <li class="item cl">
@@ -232,6 +235,30 @@ var ue = UE.getEditor('input_content',{
 	});
 
 
+</script>
+<script>
+    $(document).ready(function(){
+        $("#btn-col").click(function(){
+            var mid = {{ movie.id }};
+            var uid = {{ session['user_id'] }};
+            $.ajax({
+                url:"{{ url_for('home.moviecol_add') }}",
+                type:"GET",
+                data:"mid="+mid+"&uid="+uid,
+                dataType:"json",
+                success:function(res){
+                if(res.ok==1){
+                    $("#show_col_msg").empty();
+                    $("#show_col_mag").append("收藏成功！");
+                }else{
+                    $("#show_col_msg").empty();
+                    $("#show_col_msg").append("已经收藏！");
+                    }
+
+                }
+            });
+        });
+    });
 </script>
 <!--播放页面-->
 {% endblock %}
