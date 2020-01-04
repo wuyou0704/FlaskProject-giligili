@@ -438,7 +438,7 @@ def comment_list(page):
         User.id == Comment.user_id
     ).order_by(
         Comment.addtime.desc()
-    ).paginate(page=page, per_page=1)
+    ).paginate(page=page, per_page=10)
 
     return render_template('admin/comment_list.html', page_data=page_data)
 

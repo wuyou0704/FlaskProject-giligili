@@ -1,8 +1,8 @@
 # coding='utf-8'
 from . import home
 from flask import render_template, redirect, url_for, flash, session, request
-from app.home.forms import RegisterForm, LoginForm, UserdetailForm, PwdForm
-from app.models import User, Userlog, Preview, Tag, Movie
+from app.home.forms import RegisterForm, LoginForm, UserdetailForm, PwdForm, CommentForm
+from app.models import User, Userlog, Preview, Tag, Movie, Comment
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from app import db, app
@@ -101,7 +101,7 @@ def login():
         )
         db.session.add(userlog)
         db.session.commit()
-        return redirect(url_for('home.index'))
+        return redirect(url_for('home.index', page=1))
 
     return render_template('home/login.html', form=form)
 
@@ -192,10 +192,23 @@ def pwd():
 
 
 # 评论
-@home.route('/comments/')
+@home.route('/comments/<int:page>/')
 @user_login_req
-def comments():
-    return render_template('home/comments.html')
+def comments(page=None):
+    # 展示评论
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == Comment.movie_id,
+        User.id == session['user_id']
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('home/comments.html', page_data=page_data)
 
 
 # 登录日志
@@ -233,10 +246,10 @@ def search(page=None):
         page = 1
     key = request.args.get('key', '')
     count = Movie.query.filter(
-        Movie.title.ilike('%'+key+'%')
+        Movie.title.ilike('%' + key + '%')
     ).count()
     page_data = Movie.query.filter(
-        Movie.title.ilike('%'+key+'%')
+        Movie.title.ilike('%' + key + '%')
     ).order_by(
         Movie.addtime.desc()
     ).paginate(page=page, per_page=10)
@@ -244,32 +257,44 @@ def search(page=None):
 
 
 # 视频播放
-@home.route('/play/<int:id>/', methods=['GET'])
-def play(id=None):
+@home.route('/play/<int:id>/<int:page>/', methods=['GET', 'POST'])
+def play(id=None, page=None):
     movie = Movie.query.join(
         Tag
     ).filter(
         Tag.id == Movie.tag_id,
         Movie.id == int(id)
     ).first_or_404()
-    return render_template('home/play.html', movie=movie)
+    form = CommentForm()
+    movie.playnum = movie.playnum + 1  # 播放一次，播放数量+1
 
+    # 展示评论
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == movie.id,
+        User.id == session['user_id']
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # 进行评论
+    if 'user' in session and form.validate_on_submit():
+        data = form.data
+        comment = Comment(
+            content=data['content'],
+            movie_id=movie.id,
+            user_id=session['user_id']
+        )
+        movie.commentnum = movie.commentnum + 1
+        db.session.add(comment)
+        db.session.commit()
+        flash('评论成功！', 'ok')
+        return redirect(url_for('home.play', id=movie.id, page=1))
+    db.session.add(movie)  # 放到if外面，不登录刷新也会增加播放次数
+    db.session.commit()
+    return render_template('home/play.html', movie=movie, form=form, page_data=page_data)

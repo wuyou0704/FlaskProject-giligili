@@ -250,3 +250,27 @@ class PwdForm(FlaskForm):
         pwds = field.data
         if len(pwds) < 6:
             raise ValidationError("新密码长度不低于6位！")
+
+
+class CommentForm(FlaskForm):
+    # 评论
+    content = TextAreaField(
+        label='内容',
+        validators=[
+            DataRequired("请输入内容！")
+        ],
+        description='内容',
+        render_kw={
+            'required': 'required',
+            'placeholder': '十年窗下无人问，一举成名天下知',
+            'id': 'input_content'
+        }
+    )
+
+    submit = SubmitField(
+        '提交评论',
+        render_kw={
+            "class": "btn btn-success",
+            "id": "btn-sub"
+        }
+    )

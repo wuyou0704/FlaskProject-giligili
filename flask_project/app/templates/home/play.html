@@ -1,5 +1,5 @@
 {% extends 'home/home.html' %}
-
+{% import 'ui/comment_page.html' as pg %}
 {% block css %}
 <!--播放页面-->
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jwplayer/skins/stormtrooper.css') }}">
@@ -9,12 +9,14 @@
 <script>
         SyntaxHighlighter.all();
 
+
 </script>
 <style>
         .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9{
             padding-right: 3px;
             padding-left: 3px;
         }
+
 
 </style>
 <!--播放页面-->
@@ -111,166 +113,73 @@
                     <h3 class="panel-title"><span class="glyphicon glyphicon-comment"></span>&nbsp;电影评论</h3>
                 </div>
                 <div class="panel-body">
+                    {% for msg in get_flashed_messages(category_filter=['ok']) %} {# 用于消息闪现 #}
+                        <div class="alert alert-success alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h4><i class="icon fa fa-check"></i> 操作成功！</h4>
+                            {{ msg }}
+                        </div>
+                        {% endfor %}
+                    {% if 'user' not in session %}
                     <div class="alert alert-danger alert-dismissible" role="alert">
                         <button type="button" class="close" data-dismiss="alert">
                             <span aria-hidden="true">×</span>
                             <span class="sr-only">Close</span>
                         </button>
-                        <strong>请先<a href="login.html" target="_blank" class="text-info">登录</a>，才可参与评论！</strong>
+                        <strong>请先<a href="{{ url_for('home.login') }}" target="_blank" class="text-info">登录</a>，才可参与评论！</strong>
                     </div>
+                    {% endif %}
                     <ol class="breadcrumb" style="margin-top:6px;">
                         <li>全部评论(5)</li>
                     </ol>
-                    <form role="form" style="margin-bottom:6px;">
+                    <form role="form" style="margin-bottom:6px;" method="post">
                         <div class="form-group">
                             <div>
-                                <label for="input_content">内容</label>
-                                <textarea id="input_content"></textarea>
+                                <label for="input_content">{{ form.content.label }}</label>
+                                {{ form.content }}
                             </div>
+                            {% for err in form.content.errors %}
+                            <div class="col-md-12">
+                                <font style="color:red">{{ err }}</font>
+                            </div>
+                            {% endfor %}
                             <div class="col-xs-12" id="error_content"></div>
                         </div>
-                        <a class="btn btn-success" id="btn-sub"><span class="glyphicon glyphicon-edit"></span>&nbsp;提交评论</a>
+                        {{ form.submit }}
+                        {{ form.csrf_token }}
                         &nbsp;
                         <a class="btn btn-danger" id="btn-col"><span class="glyphicon glyphicon-heart"></span>&nbsp;收藏电影</a>
                     </form>
                     <ul class="commentList">
+                        {% for v in page_data.items %}
                         <li class="item cl">
-                            <a href="user.html">
+                            <a>
                                 <i class="avatar size-L radius">
-                                    <img alt="50x50" src="holder.js/50x50" class="img-circle"
-                                         style="border:1px solid #abcdef;">
+                                    <img alt="50x50"
+                                         src="{{ url_for('static', filename='uploads/users/'+v.user.face) }}"
+                                         class="img-circle"
+                                         style="border:1px solid #abcdef;width:50px;">
                                 </i>
                             </a>
                             <div class="comment-main">
                                 <header class="comment-header">
                                     <div class="comment-meta">
-                                        <a class="comment-author" href="user.html">xiaoli</a>
+                                        <a class="comment-author" href="user.html">{{ v.user.name }}</a>
                                         评论于
-                                        <time title="2016-12-07 09:12:51" datetime="2016-12-07 09:12:51">2017-03-01
-                                            09:12:51
+                                        <time title="{{ v.addtime }}" datetime="{{ v.addtime }}">
+                                            {{ v.addtime }}
                                         </time>
                                     </div>
                                 </header>
                                 <div class="comment-body">
-                                    <p>这电影真好看！</p>
+                                    <p>{{ v.content | safe }}</p>
                                 </div>
                             </div>
                         </li>
-                        <li class="item cl">
-                            <a href="user.html">
-                                <i class="avatar size-L radius">
-                                    <img alt="50x50" src="holder.js/50x50" class="img-circle"
-                                         style="border:1px solid #abcdef;">
-                                </i>
-                            </a>
-                            <div class="comment-main">
-                                <header class="comment-header">
-                                    <div class="comment-meta">
-                                        <a class="comment-author" href="user.html">xiaoli</a>
-                                        评论于
-                                        <time title="2016-12-07 09:12:51" datetime="2016-12-07 09:12:51">2017-03-01
-                                            09:12:51
-                                        </time>
-                                    </div>
-                                </header>
-                                <div class="comment-body">
-                                    <p>这电影真好看！</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item cl">
-                            <a href="user.html">
-                                <i class="avatar size-L radius">
-                                    <img alt="50x50" src="holder.js/50x50" class="img-circle"
-                                         style="border:1px solid #abcdef;">
-                                </i>
-                            </a>
-                            <div class="comment-main">
-                                <header class="comment-header">
-                                    <div class="comment-meta">
-                                        <a class="comment-author" href="user.html">xiaoli</a>
-                                        评论于
-                                        <time title="2016-12-07 09:12:51" datetime="2016-12-07 09:12:51">2017-03-01
-                                            09:12:51
-                                        </time>
-                                    </div>
-                                </header>
-                                <div class="comment-body">
-                                    <p>这电影真好看！</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item cl">
-                            <a href="user.html">
-                                <i class="avatar size-L radius">
-                                    <img alt="50x50" src="holder.js/50x50" class="img-circle"
-                                         style="border:1px solid #abcdef;">
-                                </i>
-                            </a>
-                            <div class="comment-main">
-                                <header class="comment-header">
-                                    <div class="comment-meta">
-                                        <a class="comment-author" href="user.html">xiaoli</a>
-                                        评论于
-                                        <time title="2016-12-07 09:12:51" datetime="2016-12-07 09:12:51">2017-03-01
-                                            09:12:51
-                                        </time>
-                                    </div>
-                                </header>
-                                <div class="comment-body">
-                                    <p>这电影真好看！</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="item cl">
-                            <a href="user.html">
-                                <i class="avatar size-L radius">
-                                    <img alt="50x50" src="holder.js/50x50" class="img-circle"
-                                         style="border:1px solid #abcdef;">
-                                </i>
-                            </a>
-                            <div class="comment-main">
-                                <header class="comment-header">
-                                    <div class="comment-meta">
-                                        <a class="comment-author" href="user.html">xiaoli</a>
-                                        评论于
-                                        <time title="2016-12-07 09:12:51" datetime="2016-12-07 09:12:51">2017-03-01
-                                            09:12:51
-                                        </time>
-                                    </div>
-                                </header>
-                                <div class="comment-body">
-                                    <p>这电影真好看！</p>
-                                </div>
-                            </div>
-                        </li>
+                        {% endfor %}
                     </ul>
                     <div class="col-md-12 text-center">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                <li>
-                                    <a href="#" aria-label="First">
-                                        <span aria-hidden="true">首页</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" aria-label="Previous">
-                                        <span aria-hidden="true">上一页</span>
-                                    </a>
-                                </li>
-                                <li><a href="#">1&nbsp;/&nbsp;10</a></li>
-                                <li>
-                                    <a href="#" aria-label="Next">
-                                        <span aria-hidden="true">下一页</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" aria-label="Last">
-                                        <span aria-hidden="true">尾页</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
+                        {{ pg.page(page_data, 'home.play', movie.id) }}
                     </div>
                 </div>
             </div>
@@ -291,9 +200,11 @@ var ue = UE.getEditor('input_content',{
     initialFrameHeight:"100",
 });
 
+
 </script>
 <script type="text/javascript">
 	jwplayer.key = "P9VTqT/X6TSP4gi/hy1wy23BivBhjdzVjMeOaQ==";
+
 
 </script>
 <script type="text/javascript">
@@ -319,6 +230,7 @@ var ue = UE.getEditor('input_content',{
 		height: 500,
 		width: 774,
 	});
+
 
 </script>
 <!--播放页面-->
