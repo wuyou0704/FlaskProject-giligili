@@ -46,8 +46,8 @@ def admin_auth(f):
         urls = [v.url for v in auth_list for val in auths if
                 val == v.id]  # 根据role表中auths字段值，去对比auth表中的id字段，相等返回auth中的url
         rule = request.url_rule  # 获得请求的url的路径部分
-        print(urls)
-        print(rule)
+        # print(urls)
+        # print(rule)
         if str(rule) not in urls:
             abort(404)  # 抛出404信息
         return f(*args, **kwargs)

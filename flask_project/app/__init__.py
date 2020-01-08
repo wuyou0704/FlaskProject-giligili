@@ -6,13 +6,12 @@ import pymysql, os
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:123456@127.0.0.1:3306/project3"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SECRET_KEY'] = 'gtfly'
+app.config['SECRET_KEY'] = 'gtflyissixsixsix'
 app.config['UP_DIR'] = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/uploads/')  # 设置上传文件保存路径
 app.config['FC_DIR'] = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/uploads/users/')  # 设置上传文件保存路径
 app.debug = True
 
 db = SQLAlchemy(app)
-
 
 from app.home import home as home_blueprint
 from app.admin import admin as admin_blueprint

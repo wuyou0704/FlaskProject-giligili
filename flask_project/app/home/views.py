@@ -6,7 +6,9 @@ from app.models import User, Userlog, Preview, Tag, Movie, Comment, Moviecol
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from app import db, app
-import uuid, time, os, datetime
+import uuid
+import os
+import datetime
 from functools import wraps
 
 
@@ -237,6 +239,7 @@ def moviecol_add():
         user_id=int(uid),
         movie_id=int(mid)
     ).count()
+    data = None
     if moviecol == 1:
         data = dict(ok=0)
 
@@ -316,7 +319,7 @@ def play(id=None, page=None):
         User
     ).filter(
         Movie.id == movie.id,
-        User.id == session['user_id']
+        #User.id == session['user_id']
     ).order_by(
         Comment.addtime.desc()
     ).paginate(page=page, per_page=10)
